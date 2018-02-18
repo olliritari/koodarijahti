@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Duckhunter</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="src/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap core JavaScript -->
+  <script src="src/jquery/jquery.min.js"></script>
+  <script src="src/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom fonts for this template -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="css/business-casual.css" rel="stylesheet">
+  <!-- Vue -->
+  <script src="src/vue/vue.js"></script>
+  <script src="src/vue/vue-form.min.js"></script>
+  <script src="src/vue/vue-resource"></script>
+
+  <!-- Scripts for sightings -->
+  <script src="sightings.js"></script>
+</head>
+
+<body>
+
+  <h1 class="site-heading text-center text-white d-none d-lg-block">
+    <span class="site-heading-upper text-primary mb-3">Are you ready to be a</span>
+    <span class="site-heading-lower">Duckhunter</span>
+  </h1>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark py-lg-4" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand text-uppercase text-expanded font-weight-bold d-lg-none" href="#">Duckhunter</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="index.html">Home
+              <span class="sr-only">(current)</span>
+            </a>
+          </li>
+          <li class="nav-item active px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="sightings.html">Sightings</a>
+          </li>
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="species.html">Species</a>
+          </li>
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="info.html">Info</a>
+          </li>
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="about.html">About</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <section class="page-section about-heading">
+    <div class="container">
+      <img class="img-fluid rounded about-heading-img mb-3 mb-lg-0" src="img/alotofducks_background.jpeg" alt="">
+      <!-- Image: Photo by Magda Ehlers from Pexels https://www.pexels.com/photo/animals-background-beaks-birds-626834/ -->
+      <div class="about-heading-content">
+        <div class="row">
+          <div class="col-xl-9 col-lg-10 mx-auto">
+            <div class="bg-faded rounded p-5">
+              <h2 class="section-heading mb-4">
+                <span class="section-heading-upper">Here is a</span>
+                <span class="section-heading-lower">List of sightings</span>
+              </h2>
+
+              <!-- GET sightings from server -->
+              <section class="section">
+                <div class="container">
+                  <div id="sightings-app">
+                    <div v-if="error != null" class="notification is-danger">
+                      Connection to server failed.
+                    </div>
+                    <table v-if="sightings != null" class="table">
+                      <thead>
+                          <button id="sort">Sort</button>
+                        <tr>
+                          <th>Date</th>
+                          <th>Species</th>
+                          <th>Count</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="sighting in sightings">
+                          <td>{{sighting.dateTime}}</td>
+                          <td>{{sighting.species}}</td>
+                          <td>{{sighting.count}}</td>
+                          <td>{{sighting.description}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Script for the GET, using 'vue response'-library -->
+  <script>
+    var url = "http://localhost:8081/sightings";
+    new Vue({
+      el: '#sightings-app',
+      data: {
+        sightings: [],
+        error: null
+      },
+      created: function () {
+        this.init();
+      },
+      methods: {
+        init: function () {
+          this.loadData();
+        },
+        loadData: function () {
+
+          this.$http.get(url).then((response) => {
+            if (!!response.body) {
+              this.sightings = response.body;
+              //Transform UTC-time format to more readable form
+              this.sightings.forEach(element => {
+                var date = new Date(element.dateTime);
+                element.dateTime = date.getDate() + '.' + (date.getMonth() + 1) + '.' + date.getFullYear();
+              });
+            }
+          }, (response) => {
+            this.error = response;
+          });
+        }
+      }
+    }); 
+  </script>
+
+  <!-- POST new sightings to server -->
+  <section class="page-section cta">
+    <div class="container">
+      <div class="row">
+        <div class="col-xl-9 mx-auto">
+          <div class="cta-inner text-center rounded">
+            <h2 class="section-heading mb-5">
+              <span class="section-heading-upper">Seen more ducks?</span>
+              <span class="section-heading-lower">Add a new sighting</span>
+            </h2>
+
+            <p>
+              <label for="species">Species </label>
+              <select id="species">
+                <option value="mallard">Mallard</option>
+                <option value="redhead">Redhead</option>
+                <option value="gadwall">Gadwall</option>
+                <option value="canvasback">Canvasback</option>
+                <option value="lesser scaup">Lesser Scaup</option>
+              </select>
+
+              <label for="count">Count </label>
+              <input type="number" id="count">
+            </p>
+
+            <p>
+              <label for="description">Description </label>
+            </p>
+            <p>
+              <textarea cols="50" id="description"></textarea>
+            </p>
+
+            <p>
+              <button id="submit" value="Submit">Submit</button>
+            </p>
+            <p style="display:none; color:red" id="warning">All fields must be filled!</p>
+
+  </section>
+
+  <img class="stamp" src="img/koodarijahti_seal_white@2x.png" alt="">
+  <footer class="footer text-faded text-center py-5">
+    <div class="container">
+      <p class="m-0 small">Copyright &copy; Olli Ritari 2018</p>
+    </div>
+  </footer>
+
+</body>
+
+</html>
